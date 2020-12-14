@@ -39,7 +39,7 @@
 
 /* Variables ---------------------------------------------------------*/
 // Custom character definition using https://omerk.github.io/lcdchargen/
-uint8_t customChar[8] = {
+uint8_t customChar[8*2] = {
 	0b00100,
 	0b01110,
 	0b11111,
@@ -47,7 +47,18 @@ uint8_t customChar[8] = {
 	0b11111,
 	0b00100,
 	0b01110,
-	0b11111
+	0b00000,
+	
+	
+	
+	0b01110,
+	0b00100,
+	0b11111,
+	0b11111,
+	0b11111,
+	0b01110,
+	0b00100,
+	0b00000
 };
 
 
@@ -63,7 +74,33 @@ typedef enum{
 type_state current_state = RESET;
 char wrong_tries = 0;
 
+void reset(void)
+{
+	// Initialize LCD display
+	lcd_init(LCD_DISP_OFF);
+	lcd_init(LCD_DISP_ON);
+	// Set pointer to beginning of CGRAM memory
+	lcd_command(1 << LCD_CGRAM);
+	for (uint8_t i = 0; i < 8*2; i++) //0,1,2,3 ,4,5,6,7
+	{
+		// Store all new chars to memory line by line
+		lcd_data(customChar[i]);
+	}
+	// Set DDRAM address
+	lcd_command(1 << LCD_DDRAM);
 
+	// Display custom characters
+	lcd_putc(0);
+	lcd_gotoxy(15, 0);
+	lcd_putc(0);
+	lcd_gotoxy(0, 1);
+	lcd_putc(1);
+	lcd_gotoxy(15, 1);
+	lcd_putc(1);
+
+	lcd_gotoxy(1, 0);
+	lcd_puts("Password:____");
+}
 
 uint8_t getkey()
 {
@@ -74,14 +111,61 @@ uint8_t getkey()
 	{
 		DDRC|=(0x10<<col);
 		if(!GPIO_read(&PINC, 0))
-			return(0);
+		return(-1);
 		for(row=0;row<4;row++)
-			if(!GPIO_read(&PINC, row))
-				return(row*3+col);
+		if(!GPIO_read(&PINC, row))
+		return(row*3+col+1);
 		DDRC&=~(0x10<<col);
 	}
-	return 12;//Indicate No key pressed
+	return 0;//Indicate No key pressed
 }
+
+void get_code(uint8_t* code)
+{
+	for(int i = 0; i < 4; i++)
+		code[i] = getkey();
+}
+
+void check_code(uint8_t* code)
+{
+	
+	
+	
+}
+
+//funkce a procedury
+void state_machine(void)
+{
+	static uint8_t code[4]={0,0,0,0};
+	switch (current_state)
+	{
+		case RESET:
+			reset();
+			current_state = GET_CODE;
+			break;
+		case GET_CODE:
+			//get_code(code);
+			//current_state = CHECK_CODE;
+			break;
+		case CHECK_CODE:
+			//current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
+			break;
+		case DOOR_OPEN:
+		
+		
+		
+			break;
+		case WRONG_CODE:
+		
+		
+		
+			break;
+		default:
+			current_state = RESET;
+			
+	}
+}
+
 
 
 /* Function definitions ----------------------------------------------*/
@@ -92,39 +176,22 @@ uint8_t getkey()
  */
 int main(void)
 {	
-	// Initialize LCD display
-	lcd_init(LCD_DISP_ON);
-	// Set pointer to beginning of CGRAM memory
-	lcd_command(1 << LCD_CGRAM);
-	for (uint8_t i = 0; i < 8; i++) //0,1,2,3 ,4,5,6,7
-	{
-		// Store all new chars to memory line by line
-		lcd_data(customChar[i]);
-	}
-	/*for (uint8_t j = 7; j >= 0; j--) //7,6,5,4, 3,2,1,0
-	{
-		// Store all new chars to memory line by line
-		lcd_data(customChar[j]);
-	}*/
-	// Set DDRAM address
-	lcd_command(1 << LCD_DDRAM);
 	
-	// Display custom characters
-	lcd_putc(0);
-	lcd_gotoxy(15, 0);
-	lcd_putc(0);
-	
-    lcd_gotoxy(1, 0); 
-	lcd_puts("Password:____");
 
 
     // Configure 16-bit Timer/Counter1 to start ADC conversion
-    // Enable interrupt and set the overflow prescaler to 262 ms
+    // Enable interrupt and set the overflow prescaler to 16 ms
+	TIM0_overflow_16us();
+	TIM0_overflow_interrupt_enable();
+	
 	TIM1_overflow_262ms();
 	TIM1_overflow_interrupt_enable();
 	
+	//TIM2_overflow_16us();
 	TIM2_overflow_4ms();
 	TIM2_overflow_interrupt_enable();
+	//TIM2_overflow_4ms();
+	//TIM2_overflow_interrupt_enable();
 	
 	
 	
@@ -150,30 +217,15 @@ int main(void)
  * ISR starts when Timer/Counter1 overflows. Use single conversion mode
  * and start conversion four times per second.
  */
-ISR(TIMER1_OVF_vect)
+ISR(TIMER0_OVF_vect)
 {
+	state_machine();
+}	
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+ISR(TIMER1_OVF_vect)
+{	
 	static uint16_t counter = 0;
 	
 	counter++;
@@ -184,17 +236,7 @@ ISR(TIMER1_OVF_vect)
 		counter = 0;
 		//char sss = "RESET";
 	
-			// Send to uart in decimal
-			uart_puts("Actual state:");
 			
-			char cislo[4] = "   ";
-			uint8_t number = getkey();
-			itoa(number, cislo, 10);
-			uart_puts(cislo);
-			uart_puts("\n");
-			//key=getkey();
-			//itoa(key, str, 10);
-			//lcd_puts(str);
 	}
 	
 
@@ -208,87 +250,44 @@ ISR(TIMER1_OVF_vect)
  */
 ISR(TIMER2_OVF_vect)
 {
-   
-   static uint16_t counter = 0;
-   
-   counter++;
-   lcd_gotoxy(14, 2);
-   if(counter == 2500){ //4ms
-	   TIM1_overflow_interrupt_enable();
-	   lcd_putc('Z');
+	static type_state prev_state = RESET;
+	uart_puts("");
+	if(current_state != prev_state)
+   {
+	   // Send to uart
+	   uart_puts("Current state: ");
+	   switch(current_state)
+	   {
+			case RESET:
+				uart_puts("RESET");
+				break;
+			case GET_CODE:
+				uart_puts("GET_CODE");
+				break;
+			case CHECK_CODE:
+				uart_puts("CHECK_CODE");
+				break;
+			case DOOR_OPEN:
+				uart_puts("DOOR_OPEN");
+				break;
+			case WRONG_CODE:
+				uart_puts("WRONG_CODE");
+				break;
+			default:
+				uart_puts("ERROR");
+	   }
+	   uart_puts("\n");
+	   
+	   //char cislo[4] = "   ";
+	   //uint8_t number = getkey();
+	   //itoa(number, cislo, 10);
+	   //uart_puts(cislo);
+	   //uart_puts("\n");
+	   //key=getkey();
+	   //itoa(key, str, 10);
+	   //lcd_puts(str);
    }
    
    
-   
-   /** // WRITE YOUR CODE HERE
-	uint16_t value;
-	char lcd_string[5];
-	char parity = 0;
-	value = ADC;
-	bool b[8]; //bits
-
-	for (int j = 0;  j < 8;  j++)
-		b[j] = 0 != (value & (1 << j));
-		
-	// Print parity bit
-	parity = b[0]^b[1]^b[2]^b[3]^b[4]^b[5]^b[6]^b[7];
-	lcd_gotoxy(14, 1);
-	itoa(parity, lcd_string, 10);
-	lcd_puts(lcd_string);
-	
-	// Print on LCD in decimal
-	itoa(value, lcd_string, 10);
-	lcd_gotoxy(8, 0);
-	lcd_puts("    ");
-	lcd_gotoxy(8, 0);
-	lcd_puts(lcd_string);
-	
-	if(value < 700)
-	{
-		// Send to uart in decimal
-		uart_puts("ADC value in decimal: ");
-		uart_puts(lcd_string);
-		uart_puts("\n");
-	}
-	itoa(value, lcd_string, 16);
-	lcd_gotoxy(13, 0);
-	lcd_puts("    ");
-	lcd_gotoxy(13, 0);
-	lcd_puts(lcd_string);
-	
-	
-	// Print what is pressed
-	lcd_gotoxy(8, 1);
-	lcd_puts("      ");
-	if(value >= 1023-8)
-	{
-		lcd_gotoxy(8, 1);
-		lcd_puts("None  ");
-	}
-	else if(value >= 651-8)
-	{
-		lcd_gotoxy(8, 1);
-		lcd_puts("Select");
-	}
-	else if(value >= 403-8)
-	{
-		lcd_gotoxy(8, 1);
-		lcd_puts("Left  ");
-	}
-	else if(value >= 246-8)
-	{
-		lcd_gotoxy(8, 1);
-		lcd_puts("Down  ");
-	}
-	else if(value >= 101-8)
-	{
-		lcd_gotoxy(8, 1);
-		lcd_puts("Up");
-	}
-	else
-	{
-		lcd_gotoxy(8, 1);
-		lcd_puts("Right ");
-	}
-*/	
+   prev_state = current_state;
 }
