@@ -9,15 +9,9 @@
  **********************************************************************/
 
 /* Defines -----------------------------------------------------------*/
-/*#define COL_0	PD2
-#define COL_1	PD1
-#define COL_2	PD0
-//#define AUDIO	PC0
-#define RELAY	PC1
-#define ROW_0	PC2
-#define ROW_1	PC3
-#define ROW_2	PC4
-#define ROW_3	PC5*/
+#define AUDIO	PB2
+#define RELAY	PB3
+
 
 
 /* Includes ----------------------------------------------------------*/
@@ -72,7 +66,6 @@ typedef enum{
 } type_state;
 
 type_state current_state = RESET;
-char wrong_tries = 0;
 
 void reset(void)
 {
@@ -128,7 +121,7 @@ uint8_t getkey()
 
 void get_code(uint8_t* code)
 {
-	TIM2_overflow_4ms()
+	TIM2_overflow_16ms()
 	TIM2_overflow_interrupt_enable();
 	uint8_t key = getkey();
 	if (key!=0)
@@ -187,8 +180,6 @@ bool check_code(uint8_t* code)
 		lcd_puts("Welcome User3");
 		return 1;
 	}
-	//if(code[0]==1)
-	//return 1;
 	else return 0;
 	
 	
@@ -212,14 +203,9 @@ void state_machine(void)
 		case CHECK_CODE:
 			current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
 			break;
-		case DOOR_OPEN:
-				
-		
+		case DOOR_OPEN:		
 			break;
-		case WRONG_CODE:
-		
-		
-		
+		case WRONG_CODE:		
 			break;
 		default:
 			current_state = RESET;
@@ -238,7 +224,8 @@ void state_machine(void)
 int main(void)
 {	
 	
-
+	DDRB|=(0x0C);
+	PORTB&=~(0x0C);
 
     // Configure 16-bit Timer/Counter1 to start ADC conversion
     // Enable interrupt and set the overflow prescaler to 16 ms
@@ -251,8 +238,6 @@ int main(void)
 	TIM1_overflow_interrupt_enable();
 	
 	
-	//TIM2_overflow_4ms();
-	//TIM2_overflow_interrupt_enable();
 	
 	lcd_init(LCD_DISP_ON);
 	
@@ -288,8 +273,7 @@ ISR(TIMER0_OVF_vect)
 
 /* -------------------------------------------------------------------*/
 /**
- * ISR starts when ADC completes the conversion. Display value on LCD
- * and send it to UART.
+ * UART
  */
 ISR(TIMER1_OVF_vect)
 {
@@ -322,17 +306,50 @@ ISR(TIMER1_OVF_vect)
 	   uart_puts("\n");
    }
    
-   
    prev_state = current_state;
 }
 
-
+// 4ms / 16ms counter
 ISR(TIMER2_OVF_vect)
 {
+	char str[] = "  ";
+	static uint8_t wrong_tries = 0;
 	static uint32_t count = 0;
-	if(count == 5000)//5000*4ms=20s
+	if(count == 0){
+		if(current_state == DOOR_OPEN)
+			GPIO_toggle(&PORTB, RELAY);
+		else if(current_state == WRONG_CODE)
+		{
+					wrong_tries++;
+					lcd_clrscr();
+					lcd_putc(0);
+					lcd_gotoxy(15, 0);
+					lcd_putc(0);
+					lcd_gotoxy(0, 1);
+					lcd_putc(1);
+					lcd_gotoxy(15, 1);
+					lcd_putc(1);
+					lcd_gotoxy(1, 0);
+					lcd_puts("ACCESS DENIED");
+					lcd_gotoxy(1, 1);
+					lcd_puts("WRONG TRIES:");
+					lcd_gotoxy(13, 1);
+					itoa(wrong_tries, str, 10);
+					lcd_puts(str);
+					if(wrong_tries == 100)
+						wrong_tries = 0;
+					if(wrong_tries > 4)
+						GPIO_toggle(&PORTB, AUDIO);
+		}
+	}
+	
+	if(count == 1250)//1250*16ms=20s //1250*4ms = 5s
 	{
 		current_state = RESET;
+		if(current_state == DOOR_OPEN)
+			GPIO_toggle(&PORTB, RELAY);
+		else if(current_state == WRONG_CODE && wrong_tries > 4)
+			GPIO_toggle(&PORTB, AUDIO);		
 		TIM2_overflow_interrupt_disable();
 	}
 	count++;
