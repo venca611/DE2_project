@@ -160,9 +160,19 @@ void get_code(uint8_t* code)
 	}
 char password[] = "    ";
     lcd_gotoxy(10, 0);
+<<<<<<< HEAD
     for(uint8_t i = 0; i < 4; i++){
         password[i] = (code[i] == 10)? '_': '*';
     }
+=======
+    /*for(uint8_t i = 0; i < 4; i++){
+        password[i] = (code[i] == 10)? '*': '_';
+    }*/
+    password[0] = (code[0] == 10)? '1': '4';
+    password[1] = (code[1] == 10)? '2': '3';
+    password[2] = (code[2] == 10)? '3': '2';
+    password[3] = (code[3] == 10)? '4': '1';
+>>>>>>> main
     lcd_puts(password);   
 }
 
@@ -170,11 +180,19 @@ bool check_code(uint8_t* code)
 {
 	//codes are 4242, 0123, 9876
 	if((code[0]==4)&&(code[1]==2)&&(code[2]==4)&&(code[3]==2))
+<<<<<<< HEAD
 	{
 		lcd_gotoxy(1, 1);
 		lcd_puts("Welcome User1");
 		return 1;
 	}
+=======
+		{
+			lcd_gotoxy(1, 1);
+			lcd_puts("Welcome User1");
+			return 1;
+		}
+>>>>>>> main
 	else if((code[0]==11)&&(code[1]==1)&&(code[2]==2)&&(code[3]==3))
 	{
 		lcd_gotoxy(1, 1);
@@ -188,10 +206,15 @@ bool check_code(uint8_t* code)
 		return 1;
 	}
 	//if(code[0]==1)
+<<<<<<< HEAD
 	//return 1;
 	else return 0;
 	
 	
+=======
+		//return 1;
+	else return 0;
+>>>>>>> main
 }
 
 //funkce a procedury
