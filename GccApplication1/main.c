@@ -140,6 +140,7 @@ void get_code(uint8_t* code)
 						code[i]=10;
 						break;
 					}
+				_delay_ms(250);
 					break;
 			default:
 				for(uint8_t j=0;j<4;j++)
@@ -148,14 +149,25 @@ void get_code(uint8_t* code)
 						code[j]=key;
 						break;
 					}
+				_delay_ms(250);
 		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
 	}
+char password[] = "    ";
+    lcd_gotoxy(10, 0);
+    /*for(uint8_t i = 0; i < 4; i++){
+        password[i] = (code[i] == 10)? '*': '_';
+    }*/
+    password[0] = (code[0] == 10)? '1': '4';
+    password[1] = (code[1] == 10)? '2': '3';
+    password[2] = (code[2] == 10)? '3': '2';
+    password[3] = (code[3] == 10)? '4': '1';
+    lcd_puts(password);   
 }
 
 bool check_code(uint8_t* code)
 {
 	//codes are 4242, 0123, 9876
-	/*if((code[0]==4)&&(code[1]==2)&&(code[2]==4)&&(code[3]==2))
+	if((code[0]==4)&&(code[1]==2)&&(code[2]==4)&&(code[3]==2))
 		{
 			lcd_gotoxy(1, 1);
 			lcd_puts("Welcome User1");
@@ -172,9 +184,9 @@ bool check_code(uint8_t* code)
 		lcd_gotoxy(1, 1);
 		lcd_puts("Welcome User3");
 		return 1;
-	}*/
-	if(code[0]==1)
-		return 1;
+	}
+	//if(code[0]==1)
+		//return 1;
 	else return 0;
 }
 
