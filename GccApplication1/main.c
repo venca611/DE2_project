@@ -136,7 +136,7 @@ void check_code(uint8_t* code)
 //funkce a procedury
 void state_machine(void)
 {
-	static uint8_t code[4]={0,0,0,0};
+	//static uint8_t code[4]={0,0,0,0};
 	switch (current_state)
 	{
 		case RESET:
@@ -227,7 +227,7 @@ ISR(TIMER0_OVF_vect)
 ISR(TIMER1_OVF_vect)
 {	
 	static uint16_t counter = 0;
-	
+	static uint8_t code[4]={10,10,10,10};
 	counter++;
 	lcd_gotoxy(14, 1);
 	if(counter == 4){ //4/4=1s
@@ -238,7 +238,31 @@ ISR(TIMER1_OVF_vect)
 	
 			
 	}
-	
+	uint8_t key = getkey();
+	if (key!=12)
+		{
+			switch(key)
+			{
+				case 12:
+					current_state=CHECK_CODE();
+					break;
+				case 10:
+					for(uint8_t i=3;i>=0;i--)
+						if(code[i]!=10)
+						{
+							code[i]=10;
+							i=0;
+						}
+					break;
+				default:
+					for(uint8_t j=0;j<4;j++)
+						if(code[j]==10)
+						{
+							code[j]=key;
+							j=4;
+						}		
+			}
+		}
 
 
 }
