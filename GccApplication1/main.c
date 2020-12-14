@@ -66,6 +66,8 @@ typedef enum{
 } type_state;
 
 type_state current_state = RESET;
+uint32_t counter2 = 0;
+
 
 void reset(void)
 {
@@ -122,7 +124,7 @@ uint8_t getkey()
 void get_code(uint8_t* code)
 {
 	if(code[0] != 10)
-	{
+	{		
 		TIM2_overflow_16ms()
 		TIM2_overflow_interrupt_enable();	
 	}
@@ -159,7 +161,8 @@ void get_code(uint8_t* code)
 	
 	if(code[0] == 10)
 	{
-		TIM2_overflow_interrupt_disable();	
+		TIM2_overflow_interrupt_disable();
+		counter2 = 0;
 	}	
 	
 	
@@ -186,7 +189,7 @@ bool check_code(uint8_t* code)
 		lcd_puts("Welcome User2");
 		return 1;
 	}
-	else if((code[0]==9)&&(code[1]==8)&&(code[2]==7)&&(code[3]==4))
+	else if((code[0]==9)&&(code[1]==8)&&(code[2]==7)&&(code[3]==6))
 	{
 		lcd_gotoxy(1, 1);
 		lcd_puts("Welcome User3");
@@ -214,6 +217,7 @@ void state_machine(void)
 			break;
 		case CHECK_CODE:
 			current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
+			TIM2_overflow_interrupt_disable();
 			TIM2_overflow_4ms()
 			TIM2_overflow_interrupt_enable();
 			break;
@@ -221,8 +225,8 @@ void state_machine(void)
 			break;
 		case WRONG_CODE:		
 			break;
-		//default:
-		//	current_state = RESET;
+		default:
+			current_state = RESET;
 			
 	}
 }
@@ -326,51 +330,44 @@ ISR(TIMER1_OVF_vect)
 // 4ms / 16ms counter
 ISR(TIMER2_OVF_vect)
 {
-	/*char str[] = "  ";
-	static uint8_t wrong_tries = 0;*/
-	static uint32_t count = 0;
-	//PORTB|=(0x08);
-	if(count == 0){
-		if(current_state == DOOR_OPEN)
-			PORTB|=(0x08);//GPIO_toggle(&PORTB, RELAY);
+	//char str[] = "  ";
+	//static uint8_t wrong_tries = 0;
+	if(current_state == DOOR_OPEN)
+		PORTB|=(0x08);
+	if(current_state == WRONG_CODE)
+	{
+		/*wrong_tries++;
+		lcd_clrscr();
+		lcd_putc(0);
+		lcd_gotoxy(15, 0);
+		lcd_putc(0);
+		lcd_gotoxy(0, 1);
+		lcd_putc(1);
+		lcd_gotoxy(15, 1);
+		lcd_putc(1);
+		lcd_gotoxy(1, 0);
+		lcd_puts("ACCESS DENIED");
+		lcd_gotoxy(1, 1);
+		lcd_puts("WRONG TRIES:");
+		lcd_gotoxy(13, 1);
+		itoa(wrong_tries, str, 10);
+		lcd_puts(str);
+		if(wrong_tries == 100)
+			wrong_tries = 0;
+		if(wrong_tries > 4)*/
+			PORTB|=(0x04);
 	}
-		/*else if(current_state == WRONG_CODE)
-		{
-					wrong_tries++;
-					lcd_clrscr();
-					lcd_putc(0);
-					lcd_gotoxy(15, 0);
-					lcd_putc(0);
-					lcd_gotoxy(0, 1);
-					lcd_putc(1);
-					lcd_gotoxy(15, 1);
-					lcd_putc(1);
-					lcd_gotoxy(1, 0);
-					lcd_puts("ACCESS DENIED");
-					lcd_gotoxy(1, 1);
-					lcd_puts("WRONG TRIES:");
-					lcd_gotoxy(13, 1);
-					itoa(wrong_tries, str, 10);
-					lcd_puts(str);
-					if(wrong_tries == 100)
-						wrong_tries = 0;
-					if(wrong_tries > 4)
-						PORTB|=(0x08);
-						//GPIO_toggle(&PORTB, AUDIO);
-		}
-	}*/
 	
-	
-	count++;
-	if(count == 1250)//1250*16ms=20s //1250*4ms = 5s
+	counter2++;
+	if(counter2 == 1250)//1250*16ms=20s //1250*4ms = 5s
 	{
 		PORTB&=~(0x08);
-		
+		PORTB&=~(0x04);
 		/*if(current_state == DOOR_OPEN){}
 			//PORTB&=~(0x04);//GPIO_toggle(&PORTB, RELAY);
 		else if(current_state == WRONG_CODE && wrong_tries > 4)
 			PORTB&=~(0x08);//GPIO_toggle(&PORTB, AUDIO);	*/	
-		count = 0;
+		counter2 = 0;
 		current_state = RESET;
 		TIM2_overflow_interrupt_disable();
 	}
