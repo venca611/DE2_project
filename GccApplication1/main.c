@@ -154,9 +154,26 @@ void get_code(uint8_t* code)
 
 bool check_code(uint8_t* code)
 {
-	return 1; //TODO
-	
-	
+	//codes are 4242, 0123, 9876
+	if((code[0]==4)&&(code[1]==2)&&(code[2]==4)&&(code[3]==2))
+		{
+			lcd_gotoxy(1, 1);
+			lcd_puts("Welcome User1");
+			return 1;
+		}
+	else if((code[0]==11)&&(code[1]==1)&&(code[2]==2)&&(code[3]==3))
+	{
+		lcd_gotoxy(1, 1);
+		lcd_puts("Welcome User2");
+		return 1;
+	}
+	else if((code[0]==9)&&(code[1]==8)&&(code[2]==7)&&(code[3]==4))
+	{
+		lcd_gotoxy(1, 1);
+		lcd_puts("Welcome User3");
+		return 1;
+	}
+	else return 0;
 }
 
 //funkce a procedury
