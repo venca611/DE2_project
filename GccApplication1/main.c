@@ -76,9 +76,8 @@ char wrong_tries = 0;
 
 void reset(void)
 {
-	// Initialize LCD display
-	lcd_init(LCD_DISP_OFF);
-	lcd_init(LCD_DISP_ON);
+	
+	
 	// Set pointer to beginning of CGRAM memory
 	lcd_command(1 << LCD_CGRAM);
 	for (uint8_t i = 0; i < 8*2; i++) //0,1,2,3 ,4,5,6,7
@@ -89,6 +88,8 @@ void reset(void)
 	// Set DDRAM address
 	lcd_command(1 << LCD_DDRAM);
 
+	// Initialize LCD display
+	lcd_clrscr();
 	// Display custom characters
 	lcd_putc(0);
 	lcd_gotoxy(15, 0);
@@ -97,9 +98,14 @@ void reset(void)
 	lcd_putc(1);
 	lcd_gotoxy(15, 1);
 	lcd_putc(1);
+	
+	//lcd_gotoxy(1, 1);
+	//lcd_puts("Welcome Bachhh");
+	
 
 	lcd_gotoxy(1, 0);
 	lcd_puts("Password:____");
+	//_delay_ms(2000);
 }
 
 uint8_t getkey()
@@ -140,6 +146,7 @@ void get_code(uint8_t* code)
 						code[i]=10;
 						break;
 					}
+				_delay_ms(250);
 					break;
 			default:
 				for(uint8_t j=0;j<4;j++)
@@ -148,13 +155,41 @@ void get_code(uint8_t* code)
 						code[j]=key;
 						break;
 					}
+				_delay_ms(250);
 		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
 	}
+char password[] = "    ";
+    lcd_gotoxy(10, 0);
+    for(uint8_t i = 0; i < 4; i++){
+        password[i] = (code[i] == 10)? '_': '*';
+    }
+    lcd_puts(password);   
 }
 
 bool check_code(uint8_t* code)
 {
-	return 1; //TODO
+	//codes are 4242, 0123, 9876
+	if((code[0]==4)&&(code[1]==2)&&(code[2]==4)&&(code[3]==2))
+	{
+		lcd_gotoxy(1, 1);
+		lcd_puts("Welcome User1");
+		return 1;
+	}
+	else if((code[0]==11)&&(code[1]==1)&&(code[2]==2)&&(code[3]==3))
+	{
+		lcd_gotoxy(1, 1);
+		lcd_puts("Welcome User2");
+		return 1;
+	}
+	else if((code[0]==9)&&(code[1]==8)&&(code[2]==7)&&(code[3]==4))
+	{
+		lcd_gotoxy(1, 1);
+		lcd_puts("Welcome User3");
+		return 1;
+	}
+	//if(code[0]==1)
+	//return 1;
+	else return 0;
 	
 	
 }
@@ -167,6 +202,8 @@ void state_machine(void)
 	{
 		case RESET:
 			reset();
+			for(uint8_t i = 0; i < 4; i++)
+				code[i]=10;
 			current_state = GET_CODE;
 			break;
 		case GET_CODE:
@@ -176,8 +213,7 @@ void state_machine(void)
 			current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
 			break;
 		case DOOR_OPEN:
-		
-		
+				
 		
 			break;
 		case WRONG_CODE:
@@ -218,7 +254,7 @@ int main(void)
 	//TIM2_overflow_4ms();
 	//TIM2_overflow_interrupt_enable();
 	
-	
+	lcd_init(LCD_DISP_ON);
 	
     // Initialize UART to asynchronous, 8N1, 9600
 	uart_init(UART_BAUD_SELECT(9600, F_CPU));
@@ -248,18 +284,7 @@ ISR(TIMER0_OVF_vect)
 }	
 	
 	
-	
-ISR(TIMER2_OVF_vect)
-{	
-	static uint32_t count = 0;
-	if(count == 1249)
-	{
-		TIM2_overflow_interrupt_disable();
-		current_state = RESET;
-	}
-	count++;
 
-}
 
 /* -------------------------------------------------------------------*/
 /**
@@ -299,4 +324,17 @@ ISR(TIMER1_OVF_vect)
    
    
    prev_state = current_state;
+}
+
+
+ISR(TIMER2_OVF_vect)
+{
+	static uint32_t count = 0;
+	if(count == 5000)//5000*4ms=20s
+	{
+		current_state = RESET;
+		TIM2_overflow_interrupt_disable();
+	}
+	count++;
+
 }
