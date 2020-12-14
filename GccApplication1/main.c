@@ -111,10 +111,10 @@ uint8_t getkey()
 	{
 		DDRC|=(0x10<<col);
 		if(!GPIO_read(&PINC, 0))
-		return(-1);
+			return(-1);
 		for(row=0;row<4;row++)
-		if(!GPIO_read(&PINC, row))
-		return(row*3+col+1);
+			if(!GPIO_read(&PINC, row))
+				return(row*3+col+1);
 		DDRC&=~(0x10<<col);
 	}
 	return 0;//Indicate No key pressed
@@ -122,13 +122,15 @@ uint8_t getkey()
 
 void get_code(uint8_t* code)
 {
-	
+	TIM2_overflow_4ms()
+	TIM2_overflow_interrupt_enable();
 	uint8_t key = getkey();
 	if (key!=0)
 	{
 		switch(key)
 		{
 			case 12:
+				TIM2_overflow_interrupt_disable();
 				current_state = CHECK_CODE; //ma se provest kontrola hesla a pripadne dalsi zmeny
 				break;
 			case 10:
@@ -148,14 +150,11 @@ void get_code(uint8_t* code)
 					}
 		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
 	}
-
-	/*for(int i = 0; i < 4; i++)
-		code[i] = getkey();*/
 }
 
-void check_code(uint8_t* code)
+bool check_code(uint8_t* code)
 {
-	
+	return 1; //TODO
 	
 	
 }
@@ -163,10 +162,7 @@ void check_code(uint8_t* code)
 //funkce a procedury
 void state_machine(void)
 {
-	
-	
-	
-	//static uint8_t code[4]={0,0,0,0};
+	static uint8_t code[4]={10,10,10,10};
 	switch (current_state)
 	{
 		case RESET:
@@ -174,11 +170,10 @@ void state_machine(void)
 			current_state = GET_CODE;
 			break;
 		case GET_CODE:
-			//get_code(code);
-			//current_state = CHECK_CODE;
+			get_code(code);
 			break;
 		case CHECK_CODE:
-			//current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
+			current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
 			break;
 		case DOOR_OPEN:
 		
@@ -211,15 +206,15 @@ int main(void)
 
     // Configure 16-bit Timer/Counter1 to start ADC conversion
     // Enable interrupt and set the overflow prescaler to 16 ms
-	TIM0_overflow_16us();
+	//TIM0_overflow_16us();
+	TIM0_overflow_16ms();
 	TIM0_overflow_interrupt_enable();
 	
 	TIM1_overflow_262ms();
+	//TIM1_overflow_4ms();
 	TIM1_overflow_interrupt_enable();
 	
-	//TIM2_overflow_16us();
-	TIM2_overflow_4ms();
-	TIM2_overflow_interrupt_enable();
+	
 	//TIM2_overflow_4ms();
 	//TIM2_overflow_interrupt_enable();
 	
@@ -254,10 +249,15 @@ ISR(TIMER0_OVF_vect)
 	
 	
 	
-ISR(TIMER1_OVF_vect)
+ISR(TIMER2_OVF_vect)
 {	
-	static uint8_t code[4]={10,10,10,10};
-	
+	static uint32_t count = 0;
+	if(count == 1249)
+	{
+		TIM2_overflow_interrupt_disable();
+		current_state = RESET;
+	}
+	count++;
 
 }
 
@@ -266,7 +266,7 @@ ISR(TIMER1_OVF_vect)
  * ISR starts when ADC completes the conversion. Display value on LCD
  * and send it to UART.
  */
-ISR(TIMER2_OVF_vect)
+ISR(TIMER1_OVF_vect)
 {
 	static type_state prev_state = RESET;
 	uart_puts("");
@@ -295,15 +295,6 @@ ISR(TIMER2_OVF_vect)
 				uart_puts("ERROR");
 	   }
 	   uart_puts("\n");
-	   
-	   //char cislo[4] = "   ";
-	   //uint8_t number = getkey();
-	   //itoa(number, cislo, 10);
-	   //uart_puts(cislo);
-	   //uart_puts("\n");
-	   //key=getkey();
-	   //itoa(key, str, 10);
-	   //lcd_puts(str);
    }
    
    
