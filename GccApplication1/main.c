@@ -122,8 +122,35 @@ uint8_t getkey()
 
 void get_code(uint8_t* code)
 {
-	for(int i = 0; i < 4; i++)
-		code[i] = getkey();
+	
+	uint8_t key = getkey();
+	if (key!=0)
+	{
+		switch(key)
+		{
+			case 12:
+				current_state = CHECK_CODE; //ma se provest kontrola hesla a pripadne dalsi zmeny
+				break;
+			case 10:
+				for(uint8_t i=3;i>=0;i--)
+					if(code[i]!=10)
+					{
+						code[i]=10;
+						break;
+					}
+					break;
+			default:
+				for(uint8_t j=0;j<4;j++)
+					if(code[j]==10)
+					{
+						code[j]=key;
+						break;
+					}
+		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
+	}
+
+	/*for(int i = 0; i < 4; i++)
+		code[i] = getkey();*/
 }
 
 void check_code(uint8_t* code)
@@ -136,6 +163,9 @@ void check_code(uint8_t* code)
 //funkce a procedury
 void state_machine(void)
 {
+	
+	
+	
 	//static uint8_t code[4]={0,0,0,0};
 	switch (current_state)
 	{
@@ -226,44 +256,8 @@ ISR(TIMER0_OVF_vect)
 	
 ISR(TIMER1_OVF_vect)
 {	
-	static uint16_t counter = 0;
 	static uint8_t code[4]={10,10,10,10};
-	counter++;
-	lcd_gotoxy(14, 1);
-	if(counter == 4){ //4/4=1s
-		//TIM1_overflow_interrupt_disable();
-		//GPIO_toggle(&PORTC, RELAY);
-		counter = 0;
-		//char sss = "RESET";
 	
-			
-	}
-	uint8_t key = getkey();
-	if (key!=12)
-		{
-			switch(key)
-			{
-				case 12:
-					current_state=CHECK_CODE(); //ma se provest kontrola hesla a pripadne dalsi zmeny
-					break;
-				case 10:
-					for(uint8_t i=3;i>=0;i--)
-						if(code[i]!=10)
-						{
-							code[i]=10;
-							i=0;
-						}
-					break;
-				default:
-					for(uint8_t j=0;j<4;j++)
-						if(code[j]==10)
-						{
-							code[j]=key;
-							j=4;
-						}		
-			} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
-		}
-
 
 }
 
