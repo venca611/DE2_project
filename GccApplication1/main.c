@@ -121,8 +121,12 @@ uint8_t getkey()
 
 void get_code(uint8_t* code)
 {
-	TIM2_overflow_16ms()
-	TIM2_overflow_interrupt_enable();
+	if(code[0] != 10)
+	{
+		TIM2_overflow_16ms()
+		TIM2_overflow_interrupt_enable();	
+	}
+	
 	uint8_t key = getkey();
 	if (key!=0)
 	{
@@ -151,7 +155,15 @@ void get_code(uint8_t* code)
 				_delay_ms(250);
 		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
 	}
-char password[] = "    ";
+	
+	
+	if(code[0] == 10)
+	{
+		TIM2_overflow_interrupt_disable();	
+	}	
+	
+	
+	char password[] = "    ";
     lcd_gotoxy(10, 0);
     for(uint8_t i = 0; i < 4; i++){
         password[i] = (code[i] == 10)? '_': '*';
@@ -209,8 +221,8 @@ void state_machine(void)
 			break;
 		case WRONG_CODE:		
 			break;
-		default:
-			current_state = RESET;
+		//default:
+		//	current_state = RESET;
 			
 	}
 }
@@ -226,9 +238,9 @@ void state_machine(void)
 int main(void)
 {	
 	
-	DDRB|=(0x0C);
-	PORTB&=~(0x0C);
-
+	DDRB|=(0x08);
+	PORTB&=~(0x08);
+	//PORTB|=(0x08);
     // Configure 16-bit Timer/Counter1 to start ADC conversion
     // Enable interrupt and set the overflow prescaler to 16 ms
 	//TIM0_overflow_16us();
@@ -275,7 +287,7 @@ ISR(TIMER0_OVF_vect)
 
 /* -------------------------------------------------------------------*/
 /**
- * UART
+ * UART 262ms
  */
 ISR(TIMER1_OVF_vect)
 {
@@ -314,13 +326,15 @@ ISR(TIMER1_OVF_vect)
 // 4ms / 16ms counter
 ISR(TIMER2_OVF_vect)
 {
-	char str[] = "  ";
-	static uint8_t wrong_tries = 0;
+	/*char str[] = "  ";
+	static uint8_t wrong_tries = 0;*/
 	static uint32_t count = 0;
-	if(count == 1){
+	//PORTB|=(0x08);
+	if(count == 0){
 		if(current_state == DOOR_OPEN)
-			PORTB|=(0x04);//GPIO_toggle(&PORTB, RELAY);
-		else if(current_state == WRONG_CODE)
+			PORTB|=(0x08);//GPIO_toggle(&PORTB, RELAY);
+	}
+		/*else if(current_state == WRONG_CODE)
 		{
 					wrong_tries++;
 					lcd_clrscr();
@@ -344,19 +358,22 @@ ISR(TIMER2_OVF_vect)
 						PORTB|=(0x08);
 						//GPIO_toggle(&PORTB, AUDIO);
 		}
-	}
+	}*/
 	
+	
+	count++;
 	if(count == 1250)//1250*16ms=20s //1250*4ms = 5s
 	{
+		PORTB&=~(0x08);
 		
-		if(current_state == DOOR_OPEN)
-			PORTB&=~(0x04);//GPIO_toggle(&PORTB, RELAY);
+		/*if(current_state == DOOR_OPEN){}
+			//PORTB&=~(0x04);//GPIO_toggle(&PORTB, RELAY);
 		else if(current_state == WRONG_CODE && wrong_tries > 4)
-			PORTB&=~(0x08);//GPIO_toggle(&PORTB, AUDIO);		
+			PORTB&=~(0x08);//GPIO_toggle(&PORTB, AUDIO);	*/	
 		count = 0;
 		current_state = RESET;
 		TIM2_overflow_interrupt_disable();
 	}
-	count++;
+	
 
 }
