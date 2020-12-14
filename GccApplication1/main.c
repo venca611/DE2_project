@@ -244,7 +244,7 @@ ISR(TIMER1_OVF_vect)
 			switch(key)
 			{
 				case 12:
-					current_state=CHECK_CODE();
+					current_state=CHECK_CODE(); //ma se provest kontrola hesla a pripadne dalsi zmeny
 					break;
 				case 10:
 					for(uint8_t i=3;i>=0;i--)
@@ -261,7 +261,7 @@ ISR(TIMER1_OVF_vect)
 							code[j]=key;
 							j=4;
 						}		
-			}
+			} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
 		}
 
 
