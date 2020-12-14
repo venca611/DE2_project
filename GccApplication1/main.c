@@ -202,6 +202,8 @@ void state_machine(void)
 			break;
 		case CHECK_CODE:
 			current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
+			TIM2_overflow_4ms()
+			TIM2_overflow_interrupt_enable();
 			break;
 		case DOOR_OPEN:		
 			break;
@@ -315,9 +317,9 @@ ISR(TIMER2_OVF_vect)
 	char str[] = "  ";
 	static uint8_t wrong_tries = 0;
 	static uint32_t count = 0;
-	if(count == 0){
+	if(count == 1){
 		if(current_state == DOOR_OPEN)
-			GPIO_toggle(&PORTB, RELAY);
+			PORTB|=(0x04);//GPIO_toggle(&PORTB, RELAY);
 		else if(current_state == WRONG_CODE)
 		{
 					wrong_tries++;
@@ -339,17 +341,20 @@ ISR(TIMER2_OVF_vect)
 					if(wrong_tries == 100)
 						wrong_tries = 0;
 					if(wrong_tries > 4)
-						GPIO_toggle(&PORTB, AUDIO);
+						PORTB|=(0x08);
+						//GPIO_toggle(&PORTB, AUDIO);
 		}
 	}
 	
 	if(count == 1250)//1250*16ms=20s //1250*4ms = 5s
 	{
-		current_state = RESET;
+		
 		if(current_state == DOOR_OPEN)
-			GPIO_toggle(&PORTB, RELAY);
+			PORTB&=~(0x04);//GPIO_toggle(&PORTB, RELAY);
 		else if(current_state == WRONG_CODE && wrong_tries > 4)
-			GPIO_toggle(&PORTB, AUDIO);		
+			PORTB&=~(0x08);//GPIO_toggle(&PORTB, AUDIO);		
+		count = 0;
+		current_state = RESET;
 		TIM2_overflow_interrupt_disable();
 	}
 	count++;
