@@ -52,7 +52,6 @@ uint8_t customChar[8*2] = {
 /** 
 * @brief List of states the machine will reach
 */
-
 typedef enum{
 	RESET,
 	GET_CODE,
@@ -69,7 +68,6 @@ uint32_t wrong_tries = 0;
 * @return none
 * @par Resets the display and prepares it for the GET_CODE state.
 */
-
 void reset(void)
 {
 	// Set pointer to beginning of CGRAM memory
@@ -104,7 +102,6 @@ void reset(void)
 * @par Enables high output value on three pins connected to columns one by one, checking each time all the pins connected to rows again one by one. 
 If it detects output, it returns the unique number assigned to every combination of a row and a column pin. If it doesn't detect any connection, it returns 0.
 */
-
 uint8_t getkey()
 {
 	uint8_t row, col;
@@ -128,7 +125,6 @@ uint8_t getkey()
 * @par Constantly runs the getkey() function, checking for input from the keypad. If there is any, operates with it - puts numbers in the code, if it is not full,
  deletes, if the '*'(backspace) character is used and sends the code to be checked if the '#'(enter) is used. Also limits the time to put in the code to 20s.
 */
-
 void get_code(uint8_t* code)
 {
 	if(code[0] != 10)
@@ -184,7 +180,6 @@ void get_code(uint8_t* code)
 * @brief Checks, if the correct code has been entered
 * @return true(1) or false (0)
 */
-
 bool check_code(uint8_t* code)
 {
 	char welcome[] = "Welcome UserX";
