@@ -26,9 +26,7 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 ![Access granted](images/access_granted.png "Access granted")
 
 ## Simulation video
-<a href="https://www.youtube.com/watch?v=zcGoftOVmLc
-" target="_blank"><img src="https://www.youtube.com/watch?v=zcGoftOVmLc/0.jpg" 
-alt="Keypad demo(YouTube)" width="240" height="180" border="10" /></a>
+- [Keypad demo (YouTube)](https://www.youtube.com/watch?v=zcGoftOVmLc)
 
 ## References
 - https://github.com/tomas-fryza/Digital-electronics-2
