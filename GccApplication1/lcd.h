@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 /**
- * @mainpage
+ * 
  * Collection of libraries for AVR-GCC
  * @author Peter Fleury pfleury@gmx.ch http://tinyurl.com/peterfleury
  * @copyright (C) 2015 Peter Fleury, GNU General Public License Version 3

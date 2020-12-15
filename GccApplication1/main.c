@@ -1,14 +1,14 @@
-/***********************************************************************
- * 
+/**
+* @mainpage
  * Keypad scanner using 4x3 keypad, LCD Hd44780 and a door relay
  *
  * ATmega328P (Arduino Uno), 16 MHz, AVR 8-bit Toolchain 3.6.2
  *
  * @author Pastusek Vaclav, Michal Krystof
  
- * @Copyright (c) 2020-2021 Pastusek Vaclav, Michal Krystof
+ * @copyright (c) 2020-2021 Pastusek Vaclav, Michal Krystof
  * 
- **********************************************************************/
+ */
 
 /* Includes ----------------------------------------------------------*/
 #include <avr/io.h>         // AVR device-specific IO definitions
