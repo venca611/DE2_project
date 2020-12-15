@@ -12,3 +12,9 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 - ATmega328P
 - LCD Hd44780
 - 4x3 keypad
+## Code description and simulations
+![alt text](https://github.com/venca611/DE2_project/images/state_diagram.png "State diagram")
+![alt text](https://github.com/venca611/DE2_project/images/default_state.png "Default state")
+![alt text](https://github.com/venca611/DE2_project/images/paritally_written_code.png "Partially written code")
+![alt text](https://github.com/venca611/DE2_project/images/access_denied.png "Access denied")
+![alt text](https://github.com/venca611/DE2_project/images/access_granted.png "Access granted")
