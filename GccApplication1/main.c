@@ -113,7 +113,7 @@ void get_code(uint8_t* code)
 {
 	if(code[0] != 10)
 	{		
-		TIM2_overflow_16ms()
+		TIM2_overflow_16ms();
 		TIM2_overflow_interrupt_enable();	
 	}
 	
@@ -201,7 +201,7 @@ void state_machine(void)
 		case CHECK_CODE:
 			current_state = check_code(code)?DOOR_OPEN:WRONG_CODE;
 			TIM2_overflow_interrupt_disable();
-			TIM2_overflow_4ms()
+			TIM2_overflow_4ms();
 			TIM2_overflow_interrupt_enable();
 			break;
 		case DOOR_OPEN:		
@@ -310,7 +310,7 @@ ISR(TIMER2_OVF_vect)
 	char str[] = "  ";
 	if(current_state == DOOR_OPEN)
 		PORTB|=(0x08);
-	if(current_state == WRONG_CODE && counter2 == 160)
+	if(current_state == WRONG_CODE && counter2 == 250)
 	{
 		lcd_gotoxy(1, 0);
 		lcd_puts("ACCESS DENIED");
