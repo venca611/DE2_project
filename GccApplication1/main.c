@@ -4,7 +4,9 @@
  *
  * ATmega328P (Arduino Uno), 16 MHz, AVR 8-bit Toolchain 3.6.2
  *
- * Copyright (c) 2020-2021 Pastusek Vaclav, Michal Krystof
+ * @author Pastusek Vaclav, Michal Krystof
+ 
+ * @Copyright (c) 2020-2021 Pastusek Vaclav, Michal Krystof
  * 
  **********************************************************************/
 
@@ -18,14 +20,12 @@
 #include "uart.h"           // Peter Fleury's UART library
 #include "stdbool.h"
 
-//#include "keypadscaner.h"				// KeyPad scaner
 #ifndef F_CPU
 #define F_CPU 16000000
 #endif
 
 #include <util/delay.h>     // Functions for busy-wait delay loops
 
-/* Variables ---------------------------------------------------------*/
 // Custom character definition using https://omerk.github.io/lcdchargen/
 uint8_t customChar[8*2] = {
 	0b00100,
@@ -49,7 +49,10 @@ uint8_t customChar[8*2] = {
 
 /* Defines -----------------------------------------------------------*/
 
-/** States **/
+/** 
+* @brief List of states the machine will reach
+*/
+
 typedef enum{
 	RESET,
 	GET_CODE,
@@ -61,6 +64,11 @@ typedef enum{
 type_state current_state = RESET;
 uint32_t counter2 = 0;
 uint32_t wrong_tries = 0;
+/**
+* @brief performs reset of the machine to the default state
+* @return none
+* @par Resets the display and prepares it for the GET_CODE state.
+*/
 
 void reset(void)
 {
@@ -90,6 +98,12 @@ void reset(void)
 	lcd_puts("Password:____");
 	//_delay_ms(2000);
 }
+/**
+* @brief Captures the event of pressing a button on a keypad
+* @return Numbers 0 to 12
+* @par Enables high output value on three pins connected to columns one by one, checking each time all the pins connected to rows again one by one. 
+If it detects output, it returns the unique number assigned to every combination of a row and a column pin. If it doesn't detect any connection, it returns 0.
+*/
 
 uint8_t getkey()
 {
@@ -108,6 +122,12 @@ uint8_t getkey()
 	}
 	return 0;//Indicate No key pressed
 }
+/**
+* @brief Provides logic over the operations over writing and deleting individual characters of the code
+* @return None
+* @par Constantly runs the getkey() function, checking for input from the keypad. If there is any, operates with it - puts numbers in the code, if it is not full,
+ deletes, if the '*'(backspace) character is used and sends the code to be checked if the '#'(enter) is used. Also limits the time to put in the code to 20s.
+*/
 
 void get_code(uint8_t* code)
 {
@@ -160,6 +180,10 @@ void get_code(uint8_t* code)
     }
     lcd_puts(password);   
 }
+/**
+* @brief Checks, if the correct code has been entered
+* @return true(1) or false (0)
+*/
 
 bool check_code(uint8_t* code)
 {
@@ -183,7 +207,10 @@ bool check_code(uint8_t* code)
 	return 0;
 }
 
-//funkce a procedury
+/**
+* @brief Switches the different states of the machine
+* @return None
+*/
 void state_machine(void)
 {
 	static uint8_t code[4]={10,10,10,10};
@@ -212,28 +239,20 @@ void state_machine(void)
 			current_state = RESET;		
 	}
 }
-
-
-
-/* Function definitions ----------------------------------------------*/
 /**
- * Main function where the program execution begins. Use Timer/Counter1
- * and start ADC conversion four times per second. Send value to LCD
- * and UART.
+ * @brief Initializes the lcd and prepares the relay, runs state machine.
+ * @return None
  */
 int main(void)
 {	
-	
 	DDRB|=(0x08);
 	PORTB&=~(0x08);
-    // Configure 16-bit Timer/Counter1 to start ADC conversion
-    // Enable interrupt and set the overflow prescaler to 16 ms
+
 	TIM0_overflow_16ms();
 	TIM0_overflow_interrupt_enable();
 	
 	TIM1_overflow_262ms();
 	TIM1_overflow_interrupt_enable();
-	
 	
 	lcd_init(LCD_DISP_ON);
 	
@@ -244,17 +263,15 @@ int main(void)
     sei();
 
     // Infinite loop
-    while (1)
-    {
-    }
-
+    while (1){}
     // Will never reach this
     return 0;
 }
 
 /* Interrupt service routines ----------------------------------------*/
 /**
- * STATE MACHINE
+ * @brief Runs the state machine
+ * @return None
  */
 ISR(TIMER0_OVF_vect)
 {
@@ -266,7 +283,8 @@ ISR(TIMER0_OVF_vect)
 
 /* -------------------------------------------------------------------*/
 /**
- * UART 262ms
+ * @brief Timer responsible for sending information to UART
+ * @par Runs the whole time alongside the state machine, if the state of the machine is changed, timer registers that and sends the information to UART.
  */
 ISR(TIMER1_OVF_vect)
 {
@@ -304,7 +322,10 @@ ISR(TIMER1_OVF_vect)
    prev_state = current_state;
 }
 
-// 4ms / 16ms counter
+/**
+* @brief Timer used for resetting after certain time
+* @par Has 2 functions - when the code is being put in, limits the time for that to 20s, when the code is entered, waits for 5s before resetting the machine.
+*/
 ISR(TIMER2_OVF_vect)
 {
 	char str[] = "  ";
