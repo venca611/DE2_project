@@ -13,7 +13,7 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 - LCD Hd44780
 - 4x3 keypad
 ## Code description and simulations
-![State diagram](https://github.com/venca611/DE2_project/tree/main/images/state_diagram.png "State diagram")
+![State diagram](images/state_diagram.png "State diagram")
 
 ![Default state](https://github.com/venca611/DE2_project/tree/main/images/default_state.png "Default state")
 
