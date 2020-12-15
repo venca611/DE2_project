@@ -1,12 +1,13 @@
 /**
-* @mainpage
+ * @mainpage
  * Keypad scanner using 4x3 keypad, LCD Hd44780 and a door relay
  *
  * ATmega328P (Arduino Uno), 16 MHz, AVR 8-bit Toolchain 3.6.2
  *
  * @author Pastusek Vaclav, Michal Krystof
- 
+ *
  * @copyright (c) 2020-2021 Pastusek Vaclav, Michal Krystof
+ * 
  * 
  */
 
@@ -48,10 +49,9 @@ uint8_t customChar[8*2] = {
 };
 
 /* Defines -----------------------------------------------------------*/
-
 /** 
-* @brief List of states the machine will reach
-*/
+ * @brief List of states the machine will reach
+ */
 typedef enum{
 	RESET,
 	GET_CODE,
@@ -63,6 +63,7 @@ typedef enum{
 type_state current_state = RESET;
 uint32_t counter2 = 0;
 uint32_t wrong_tries = 0;
+
 /**
 * @brief performs reset of the machine to the default state
 * @return none
@@ -90,41 +91,39 @@ void reset(void)
 	lcd_putc(1);
 	lcd_gotoxy(15, 1);
 	lcd_putc(1);
-	
-
 	lcd_gotoxy(1, 0);
 	lcd_puts("Password:____");
-	//_delay_ms(2000);
 }
+
 /**
 * @brief Captures the event of pressing a button on a keypad
 * @return Numbers 0 to 12
 * @par Enables high output value on three pins connected to columns one by one, checking each time all the pins connected to rows again one by one. 
-If it detects output, it returns the unique number assigned to every combination of a row and a column pin. If it doesn't detect any connection, it returns 0.
+* If it detects output, it returns the unique number assigned to every combination of a row and a column pin. If it doesn't detect any connection, it returns 0.
 */
 uint8_t getkey()
 {
 	uint8_t row, col;
-	DDRC&=~(0x7F);
-	PORTC|=0x0F;
+	DDRC&=~(0x7F); //setting all pins as input
+	PORTC|=0x0F; //setting all pins for when externally pulled, will source current
 	for(col=0;col<3;col++)
 	{
-		DDRC|=(0x10<<col);
+		DDRC|=(0x10<<col); //setting 1 column at a time to pull current
 		if(!GPIO_read(&PINC, 0))
 			return(-1);
 		for(row=0;row<4;row++)
 			if(!GPIO_read(&PINC, row))
 				return(row*3+col+1);
-		DDRC&=~(0x10<<col);
+		DDRC&=~(0x10<<col); //turning column off
 	}
 	return 0;//Indicate No key pressed
 }
 /**
-* @brief Provides logic over the operations over writing and deleting individual characters of the code
-* @return None
-* @par Constantly runs the getkey() function, checking for input from the keypad. If there is any, operates with it - puts numbers in the code, if it is not full,
- deletes, if the '*'(backspace) character is used and sends the code to be checked if the '#'(enter) is used. Also limits the time to put in the code to 20s.
-*/
+ * @brief Provides logic over the operations over writing and deleting individual characters of the code
+ * @return None
+ * @par Constantly runs the getkey() function, checking for input from the keypad. If there is any, operates with it - puts numbers in the code, if it is not full,
+ *deletes, if the '*'(backspace) character is used and sends the code to be checked if the '#'(enter) is used. Also limits the time to put in the code to 20s.
+ */
 void get_code(uint8_t* code)
 {
 	if(code[0] != 10)
@@ -140,7 +139,7 @@ void get_code(uint8_t* code)
 		{
 			case 12:
 				TIM2_overflow_interrupt_disable();
-				current_state = CHECK_CODE; //ma se provest kontrola hesla a pripadne dalsi zmeny
+				current_state = CHECK_CODE;
 				break;
 			case 10:
 				for(uint8_t i=3;i>=0;i--)
@@ -149,7 +148,7 @@ void get_code(uint8_t* code)
 						code[i]=10;
 						break;
 					}
-				_delay_ms(250);
+				_delay_ms(250); //to prevent repeated keystroke
 					break;
 			default:
 				for(uint8_t j=0;j<4;j++)
@@ -158,8 +157,8 @@ void get_code(uint8_t* code)
 						code[j]=key;
 						break;
 					}
-				_delay_ms(250);
-		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
+				_delay_ms(250); //to prevent repeated keystroke
+		}
 	}
 	
 	
@@ -176,6 +175,7 @@ void get_code(uint8_t* code)
     }
     lcd_puts(password);   
 }
+
 /**
 * @brief Checks, if the correct code has been entered
 * @return true(1) or false (0)
@@ -236,6 +236,7 @@ void state_machine(void)
 			current_state = RESET;		
 	}
 }
+
 /**
  * @brief Initializes the lcd and prepares the relay, runs state machine.
  * @return None
@@ -320,14 +321,14 @@ ISR(TIMER1_OVF_vect)
 }
 
 /**
-* @brief Timer used for resetting after certain time
-* @par Has 2 functions - when the code is being put in, limits the time for that to 20s, when the code is entered, waits for 5s before resetting the machine.
-*/
+ * @brief Timer used for resetting after certain time
+ * @par Has 2 functions - when the code is being put in, limits the time for that to 20s, when the code is entered, waits for 5s before resetting the machine.
+ */
 ISR(TIMER2_OVF_vect)
 {
 	char str[] = "  ";
 	if(current_state == DOOR_OPEN)
-		PORTB|=(0x08);
+		PORTB|=(0x08); //open door with relay
 	if(current_state == WRONG_CODE && counter2 == 250)
 	{
 		lcd_gotoxy(1, 0);
@@ -340,14 +341,14 @@ ISR(TIMER2_OVF_vect)
 		if(wrong_tries == 100)
 			wrong_tries = 0;
 		if(wrong_tries > 4)
-			PORTB|=(0x04);
+			PORTB|=(0x04); //start alarm
 	}
 	
 	counter2++;
-	if(counter2 == 1250)//timer set 4ms or 16 ms, 1250*4ms = 5s, 1250*16ms = 20s
+	if(counter2 == 1250)//timer set on 4ms or 16 ms, 1250*4ms = 5s, 1250*16ms = 20s
 	{
-		PORTB&=~(0x08);
-		PORTB&=~(0x04);
+		PORTB&=~(0x08); // close door with relay
+		PORTB&=~(0x04); // stop alarm
 		counter2 = 0;
 		current_state = RESET;
 		TIM2_overflow_interrupt_disable();
