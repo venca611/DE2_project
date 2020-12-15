@@ -24,3 +24,7 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 ![Access denied](images/access_denied.png "Access denied")
 - Access granted
 ![Access granted](images/access_granted.png "Access granted")
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=YOUTUBE_VIDEO_ID_HERE
+" target="_blank"><img src="http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
