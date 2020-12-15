@@ -19,15 +19,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   7 .debug_abbrev 00000c77  00000000  00000000  00002904  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00000ebb  00000000  00000000  0000357b  2**0
+  8 .debug_line   00000f33  00000000  00000000  0000357b  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000474  00000000  00000000  00004438  2**2
+  9 .debug_frame  00000474  00000000  00000000  000044b0  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    000006e0  00000000  00000000  000048ac  2**0
+ 10 .debug_str    00000700  00000000  00000000  00004924  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    0000127f  00000000  00000000  00004f8c  2**0
+ 11 .debug_loc    0000127f  00000000  00000000  00005024  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000001c0  00000000  00000000  0000620b  2**0
+ 12 .debug_ranges 000001c0  00000000  00000000  000062a3  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -936,11 +936,6 @@ bool check_code(uint8_t* code)
 	}
 	return 0;
  4ee:	80 e0       	ldi	r24, 0x00	; 0
-		lcd_puts("Welcome User3");
-		return 1;
-	}
-	else return 0;*/
-	
 }
  4f0:	6a 96       	adiw	r28, 0x1a	; 26
  4f2:	0f b6       	in	r0, 0x3f	; 63

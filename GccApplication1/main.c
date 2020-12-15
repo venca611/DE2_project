@@ -1,7 +1,7 @@
 /***********************************************************************
  * 
- * Analog-to-digital conversion with displaying result on LCD and 
- * transmitting via UART.
+ * Keypad scanner using 4x3 keypad, LCD Hd44780 and a door relay
+ *
  * ATmega328P (Arduino Uno), 16 MHz, AVR 8-bit Toolchain 3.6.2
  *
  * Copyright (c) 2020-2021 Pastusek Vaclav, Michal Krystof
@@ -49,7 +49,7 @@ uint8_t customChar[8*2] = {
 
 /* Defines -----------------------------------------------------------*/
 
-/* States */
+/** States **/
 typedef enum{
 	RESET,
 	GET_CODE,
