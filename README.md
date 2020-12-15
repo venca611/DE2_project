@@ -26,4 +26,5 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 ![Access granted](images/access_granted.png "Access granted")
 
 ## Simulation video
-![Keypad demo (YouTube)](https://www.youtube.com/watch?v=zcGoftOVmLc/0.jpg "Keypad demo")
+<a href="https://www.youtube.com/watch?v=zcGoftOVmLc
+" target="_blank"></a>
