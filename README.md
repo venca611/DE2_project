@@ -26,7 +26,7 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 ![Access granted](images/access_granted.png "Access granted")
 
 ## Simulation video
-https://www.youtube.com/watch?v=zcGoftOVmLc
+- https://www.youtube.com/watch?v=zcGoftOVmLc
 
 ## References
 - https://github.com/tomas-fryza/Digital-electronics-2
