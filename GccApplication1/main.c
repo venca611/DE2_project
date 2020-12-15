@@ -8,12 +8,6 @@
  * 
  **********************************************************************/
 
-/* Defines -----------------------------------------------------------*/
-#define AUDIO	PB2
-#define RELAY	PB3
-
-
-
 /* Includes ----------------------------------------------------------*/
 #include <avr/io.h>         // AVR device-specific IO definitions
 #include <avr/interrupt.h>  // Interrupts standard C library for AVR-GCC
@@ -43,8 +37,6 @@ uint8_t customChar[8*2] = {
 	0b01110,
 	0b00000,
 	
-	
-	
 	0b01110,
 	0b00100,
 	0b11111,
@@ -55,6 +47,7 @@ uint8_t customChar[8*2] = {
 	0b00000
 };
 
+/* Defines -----------------------------------------------------------*/
 
 /* States */
 typedef enum{
@@ -67,12 +60,10 @@ typedef enum{
 
 type_state current_state = RESET;
 uint32_t counter2 = 0;
-
+uint32_t wrong_tries = 0;
 
 void reset(void)
 {
-	
-	
 	// Set pointer to beginning of CGRAM memory
 	lcd_command(1 << LCD_CGRAM);
 	for (uint8_t i = 0; i < 8*2; i++) //0,1,2,3 ,4,5,6,7
@@ -93,9 +84,6 @@ void reset(void)
 	lcd_putc(1);
 	lcd_gotoxy(15, 1);
 	lcd_putc(1);
-	
-	//lcd_gotoxy(1, 1);
-	//lcd_puts("Welcome Bachhh");
 	
 
 	lcd_gotoxy(1, 0);
@@ -165,7 +153,6 @@ void get_code(uint8_t* code)
 		counter2 = 0;
 	}	
 	
-	
 	char password[] = "    ";
     lcd_gotoxy(10, 0);
     for(uint8_t i = 0; i < 4; i++){
@@ -176,28 +163,24 @@ void get_code(uint8_t* code)
 
 bool check_code(uint8_t* code)
 {
+	char welcome[] = "Welcome UserX";
+	uint8_t correct_counter = 0;
 	//codes are 4242, 0123, 9876
-	if((code[0]==4)&&(code[1]==2)&&(code[2]==4)&&(code[3]==2))
+	uint8_t correct_password[3][4] = {{4,2,4,2},{11,1,2,3},{9,8,7,6}};
+	for(uint8_t i = 0;i < 3; i++)
 	{
-		lcd_gotoxy(1, 1);
-		lcd_puts("Welcome User1");
-		return 1;
+		for(uint8_t j = 0; j < 4; j++)
+			if(correct_password[i][j] == code[j])
+				correct_counter++;
+		if(correct_counter == 4)
+		{
+			lcd_gotoxy(1, 1);
+			welcome[12] = (char) i + '0';
+			lcd_puts(welcome);
+			return 1;
+		}
 	}
-	else if((code[0]==11)&&(code[1]==1)&&(code[2]==2)&&(code[3]==3))
-	{
-		lcd_gotoxy(1, 1);
-		lcd_puts("Welcome User2");
-		return 1;
-	}
-	else if((code[0]==9)&&(code[1]==8)&&(code[2]==7)&&(code[3]==6))
-	{
-		lcd_gotoxy(1, 1);
-		lcd_puts("Welcome User3");
-		return 1;
-	}
-	else return 0;
-	
-	
+	return 0;
 }
 
 //funkce a procedury
@@ -226,8 +209,7 @@ void state_machine(void)
 		case WRONG_CODE:		
 			break;
 		default:
-			current_state = RESET;
-			
+			current_state = RESET;		
 	}
 }
 
@@ -244,17 +226,13 @@ int main(void)
 	
 	DDRB|=(0x08);
 	PORTB&=~(0x08);
-	//PORTB|=(0x08);
     // Configure 16-bit Timer/Counter1 to start ADC conversion
     // Enable interrupt and set the overflow prescaler to 16 ms
-	//TIM0_overflow_16us();
 	TIM0_overflow_16ms();
 	TIM0_overflow_interrupt_enable();
 	
 	TIM1_overflow_262ms();
-	//TIM1_overflow_4ms();
 	TIM1_overflow_interrupt_enable();
-	
 	
 	
 	lcd_init(LCD_DISP_ON);
@@ -268,8 +246,6 @@ int main(void)
     // Infinite loop
     while (1)
     {
-        /* Empty loop. All subsequent operations are performed exclusively 
-         * inside interrupt service routines ISRs */
     }
 
     // Will never reach this
@@ -278,8 +254,7 @@ int main(void)
 
 /* Interrupt service routines ----------------------------------------*/
 /**
- * ISR starts when Timer/Counter1 overflows. Use single conversion mode
- * and start conversion four times per second.
+ * STATE MACHINE
  */
 ISR(TIMER0_OVF_vect)
 {
@@ -313,9 +288,11 @@ ISR(TIMER1_OVF_vect)
 				uart_puts("CHECK_CODE");
 				break;
 			case DOOR_OPEN:
+				wrong_tries = 0;
 				uart_puts("DOOR_OPEN");
 				break;
 			case WRONG_CODE:
+				wrong_tries++;
 				uart_puts("WRONG_CODE");
 				break;
 			default:
@@ -330,21 +307,11 @@ ISR(TIMER1_OVF_vect)
 // 4ms / 16ms counter
 ISR(TIMER2_OVF_vect)
 {
-	//char str[] = "  ";
-	//static uint8_t wrong_tries = 0;
+	char str[] = "  ";
 	if(current_state == DOOR_OPEN)
 		PORTB|=(0x08);
-	if(current_state == WRONG_CODE)
+	if(current_state == WRONG_CODE && counter2 == 160)
 	{
-		/*wrong_tries++;
-		lcd_clrscr();
-		lcd_putc(0);
-		lcd_gotoxy(15, 0);
-		lcd_putc(0);
-		lcd_gotoxy(0, 1);
-		lcd_putc(1);
-		lcd_gotoxy(15, 1);
-		lcd_putc(1);
 		lcd_gotoxy(1, 0);
 		lcd_puts("ACCESS DENIED");
 		lcd_gotoxy(1, 1);
@@ -354,7 +321,7 @@ ISR(TIMER2_OVF_vect)
 		lcd_puts(str);
 		if(wrong_tries == 100)
 			wrong_tries = 0;
-		if(wrong_tries > 4)*/
+		if(wrong_tries > 4)
 			PORTB|=(0x04);
 	}
 	
@@ -363,10 +330,6 @@ ISR(TIMER2_OVF_vect)
 	{
 		PORTB&=~(0x08);
 		PORTB&=~(0x04);
-		/*if(current_state == DOOR_OPEN){}
-			//PORTB&=~(0x04);//GPIO_toggle(&PORTB, RELAY);
-		else if(current_state == WRONG_CODE && wrong_tries > 4)
-			PORTB&=~(0x08);//GPIO_toggle(&PORTB, AUDIO);	*/	
 		counter2 = 0;
 		current_state = RESET;
 		TIM2_overflow_interrupt_disable();

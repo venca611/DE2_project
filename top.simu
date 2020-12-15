@@ -31,7 +31,7 @@ KeyPad-7:
 <item hflip="1" labely="-16" itemtype="KeyPad" vflip="1" valLabelx="0" valLabely="0" labelx="-8" id="KeyPad-85" labelrot="0" valLabRot="0" Cols="3" Key_Labels="123456789*0#" y="-912" Show_id="false" x="-736" objectName="KeyPad-7" rotation="0" Rows="4"/>
  
 Ground-6: 
-<item objectName="Ground-6" x="-524" rotation="0" labelrot="0" labelx="-16" valLabRot="0" Show_id="false" labely="8" valLabelx="0" id="Ground-105" valLabely="0" itemtype="Ground" hflip="1" vflip="1" y="-608"/>
+<item objectName="Ground-6" x="-524" rotation="0" labelrot="0" labelx="-16" valLabRot="0" Show_id="false" labely="8" valLabelx="0" id="Ground-105" valLabely="0" itemtype="Ground" hflip="1" vflip="1" y="-612"/>
  
 Diode-5: 
 <item objectName="Diode-5" x="-576" rotation="-90" labelrot="0" labelx="-16" valLabRot="0" Show_id="false" Threshold="0.69999999999999996" labely="-24" valLabelx="0" Zener_Volt="0" id="Diode-61" valLabely="0" itemtype="Diode" hflip="1" vflip="1" y="-756"/>
@@ -49,7 +49,7 @@ Node-1:
 <item objectName="Node-1" x="-524" rotation="0" labelrot="0" labelx="-16" valLabRot="0" Show_id="false" labely="-24" valLabelx="0" id="Node-85" valLabely="0" itemtype="Node" hflip="1" vflip="1" y="-628"/>
  
 SerialTerm-17: 
-<item hflip="1" labely="-24" itemtype="SerialTerm" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="SerialTerm-61" labelrot="0" valLabRot="0" sizex="537" y="-800" sizey="248" Show_id="false" x="-736" objectName="SerialTerm-17" rotation="0" Mcu_Uart="1" posx="1335" posy="57"/>
+<item hflip="1" labely="-24" itemtype="SerialTerm" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="SerialTerm-61" labelrot="0" valLabRot="0" sizex="537" y="-800" sizey="248" Show_id="false" x="-736" objectName="SerialTerm-17" rotation="0" Mcu_Uart="1" posx="1365" posy="176"/>
  
 Connector-18: 
 <item hflip="1" labely="-24" startpinid="atmega328-9-PD7" endpinid="Hd44780-8-dataPin7" itemtype="Connector" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="Connector-3" labelrot="0" valLabRot="0" y="-696" enodeid="Circ_eNode-19" Show_id="false" x="-748" objectName="Connector-18" pointList="-748,-696,-928,-696,-928,-804" rotation="0"/>
@@ -130,7 +130,7 @@ Connector-66:
 <item hflip="1" labely="-24" startpinid="RelaySPST-4-switch0pinN" endpinid="Node-1-1" itemtype="Connector" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="Connector-84" labelrot="0" valLabRot="0" y="-752" enodeid="enode-54" Show_id="false" x="-520" objectName="Connector-66" pointList="-520,-752,-520,-628,-524,-628" rotation="0"/>
  
 Connector-67: 
-<item hflip="1" labely="-24" startpinid="Node-1-2" endpinid="Ground-6-Gnd" itemtype="Connector" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="Connector-86" labelrot="0" valLabRot="0" y="-628" enodeid="enode-54" Show_id="false" x="-524" objectName="Connector-67" pointList="-524,-628,-524,-624" rotation="0"/>
+<item hflip="1" labely="-24" startpinid="Node-1-2" endpinid="Ground-6-Gnd" itemtype="Connector" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="Connector-86" labelrot="0" valLabRot="0" y="-628" enodeid="enode-54" Show_id="false" x="-524" objectName="Connector-67" pointList="-524,-628,-524,-628" rotation="0"/>
  
 Connector-50: 
 <item hflip="1" labely="-24" startpinid="AudioOut-15-lPin" endpinid="atmega328-9-PB2" itemtype="Connector" vflip="1" valLabelx="0" valLabely="0" labelx="-16" id="Connector-50" labelrot="0" valLabRot="0" y="-628" enodeid="enode-50" Show_id="false" x="-620" objectName="Connector-50" pointList="-620,-628,-620,-696,-700,-696" rotation="0"/>
