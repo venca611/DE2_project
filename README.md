@@ -31,7 +31,4 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 alt="Keypad demo(YouTube)" width="240" height="180" border="10" /></a>
 
 ## References
-1. https://github.com/tomas-fryza/Digital-electronics-2
-2. 
-3.
-4.
+- https://github.com/tomas-fryza/Digital-electronics-2
