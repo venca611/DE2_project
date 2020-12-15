@@ -583,7 +583,7 @@ void get_code(uint8_t* code)
  330:	8a 30       	cpi	r24, 0x0A	; 10
  332:	51 f0       	breq	.+20     	; 0x348 <get_code+0x30>
 	{		
-		TIM2_overflow_16ms()
+		TIM2_overflow_16ms();
  334:	e1 eb       	ldi	r30, 0xB1	; 177
  336:	f0 e0       	ldi	r31, 0x00	; 0
  338:	80 81       	ld	r24, Z
@@ -936,11 +936,6 @@ bool check_code(uint8_t* code)
 	}
 	return 0;
  4ee:	80 e0       	ldi	r24, 0x00	; 0
-		lcd_puts("Welcome User3");
-		return 1;
-	}
-	else return 0;*/
-	
 }
  4f0:	6a 96       	adiw	r28, 0x1a	; 26
  4f2:	0f b6       	in	r0, 0x3f	; 63
@@ -1016,7 +1011,7 @@ void state_machine(void)
  560:	80 81       	ld	r24, Z
  562:	8e 7f       	andi	r24, 0xFE	; 254
  564:	80 83       	st	Z, r24
-			TIM2_overflow_4ms()
+			TIM2_overflow_4ms();
  566:	a1 eb       	ldi	r26, 0xB1	; 177
  568:	b0 e0       	ldi	r27, 0x00	; 0
  56a:	8c 91       	ld	r24, X
@@ -1326,7 +1321,7 @@ ISR(TIMER2_OVF_vect)
  750:	09 f4       	brne	.+2      	; 0x754 <__vector_9+0x42>
 		PORTB|=(0x08);
  752:	2b 9a       	sbi	0x05, 3	; 5
-	if(current_state == WRONG_CODE && counter2 == 160)
+	if(current_state == WRONG_CODE && counter2 == 250)
  754:	80 91 ad 01 	lds	r24, 0x01AD	; 0x8001ad <current_state>
  758:	84 30       	cpi	r24, 0x04	; 4
  75a:	09 f0       	breq	.+2      	; 0x75e <__vector_9+0x4c>
@@ -1335,7 +1330,7 @@ ISR(TIMER2_OVF_vect)
  762:	90 91 aa 01 	lds	r25, 0x01AA	; 0x8001aa <counter2+0x1>
  766:	a0 91 ab 01 	lds	r26, 0x01AB	; 0x8001ab <counter2+0x2>
  76a:	b0 91 ac 01 	lds	r27, 0x01AC	; 0x8001ac <counter2+0x3>
- 76e:	80 3a       	cpi	r24, 0xA0	; 160
+ 76e:	8a 3f       	cpi	r24, 0xFA	; 250
  770:	91 05       	cpc	r25, r1
  772:	a1 05       	cpc	r26, r1
  774:	b1 05       	cpc	r27, r1
