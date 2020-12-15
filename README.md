@@ -17,16 +17,20 @@ The objective of this project was for us to learn to work with a 4x3 keypad in c
 
 ![State diagram](images/state_diagram.png "State diagram")
 - Default state
+
 ![Default state](images/default_state.png "Default state")
 - Partially written code
+
 ![Partially written code](images/partially_written_code.png "Partially written code")
 - Access denied
+
 ![Access denied](images/access_denied.png "Access denied")
 - Access granted
+
 ![Access granted](images/access_granted.png "Access granted")
 
 ## Simulation video
-- [Keypad demo (YouTube)](https://www.youtube.com/watch?v=zcGoftOVmLc)
+- https://www.youtube.com/watch?v=zcGoftOVmLc - Keypad demo (YouTube)
 
 ## References
 - https://github.com/tomas-fryza/Digital-electronics-2
