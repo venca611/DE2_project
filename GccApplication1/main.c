@@ -193,6 +193,8 @@ bool check_code(uint8_t* code)
 				correct_counter++;
 		if(correct_counter == 4)
 		{
+			lcd_gotoxy(1, 0);
+			lcd_puts("ACCESS GRANTED");
 			lcd_gotoxy(1, 1);
 			welcome[12] = (char) i + '0';
 			lcd_puts(welcome);
@@ -342,7 +344,7 @@ ISR(TIMER2_OVF_vect)
 	}
 	
 	counter2++;
-	if(counter2 == 1250)//1250*16ms=20s //1250*4ms = 5s
+	if(counter2 == 1250)//timer set 4ms or 16 ms, 1250*4ms = 5s, 1250*16ms = 20s
 	{
 		PORTB&=~(0x08);
 		PORTB&=~(0x04);
@@ -350,6 +352,4 @@ ISR(TIMER2_OVF_vect)
 		current_state = RESET;
 		TIM2_overflow_interrupt_disable();
 	}
-	
-
 }
