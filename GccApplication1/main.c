@@ -200,6 +200,7 @@ bool check_code(uint8_t* code)
 			lcd_puts(welcome);
 			return 1;
 		}
+		correct_counter=0;
 	}
 	return 0;
 }

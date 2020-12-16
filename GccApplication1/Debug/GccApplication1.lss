@@ -15,19 +15,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   5 .debug_aranges 00000180  00000000  00000000  00000bd0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00001c08  00000000  00000000  00000d50  2**0
+  6 .debug_info   00001c0c  00000000  00000000  00000d50  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 00000c77  00000000  00000000  00002958  2**0
+  7 .debug_abbrev 00000c70  00000000  00000000  0000295c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00000f3f  00000000  00000000  000035cf  2**0
+  8 .debug_line   00000f39  00000000  00000000  000035cc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000474  00000000  00000000  00004510  2**2
+  9 .debug_frame  00000474  00000000  00000000  00004508  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000700  00000000  00000000  00004984  2**0
+ 10 .debug_str    00000700  00000000  00000000  0000497c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    0000127f  00000000  00000000  00005084  2**0
+ 11 .debug_loc    00001280  00000000  00000000  0000507c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000001c0  00000000  00000000  00006303  2**0
+ 12 .debug_ranges 000001a8  00000000  00000000  000062fc  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -421,8 +421,6 @@ void reset(void)
 	lcd_putc(1);
  25e:	81 e0       	ldi	r24, 0x01	; 1
  260:	0e 94 ae 00 	call	0x15c	; 0x15c <lcd_putc>
-	
-
 	lcd_gotoxy(1, 0);
  264:	60 e0       	ldi	r22, 0x00	; 0
  266:	81 e0       	ldi	r24, 0x01	; 1
@@ -431,7 +429,6 @@ void reset(void)
  26c:	80 e2       	ldi	r24, 0x20	; 32
  26e:	91 e0       	ldi	r25, 0x01	; 1
  270:	0e 94 b2 00 	call	0x164	; 0x164 <lcd_puts>
-	//_delay_ms(2000);
 }
  274:	df 91       	pop	r29
  276:	cf 91       	pop	r28
@@ -442,7 +439,7 @@ void reset(void)
 0000027e <getkey>:
 * @return Numbers 0 to 12
 * @par Enables high output value on three pins connected to columns one by one, checking each time all the pins connected to rows again one by one. 
-If it detects output, it returns the unique number assigned to every combination of a row and a column pin. If it doesn't detect any connection, it returns 0.
+* If it detects output, it returns the unique number assigned to every combination of a row and a column pin. If it doesn't detect any connection, it returns 0.
 */
 uint8_t getkey()
 {
@@ -455,11 +452,11 @@ uint8_t getkey()
  28a:	cf 93       	push	r28
  28c:	df 93       	push	r29
 	uint8_t row, col;
-	DDRC&=~(0x7F);
+	DDRC&=~(0x7F); //setting all pins as input
  28e:	87 b1       	in	r24, 0x07	; 7
  290:	80 78       	andi	r24, 0x80	; 128
  292:	87 b9       	out	0x07, r24	; 7
-	PORTC|=0x0F;
+	PORTC|=0x0F; //setting all pins for when externally pulled, will source current
  294:	88 b1       	in	r24, 0x08	; 8
  296:	8f 60       	ori	r24, 0x0F	; 15
  298:	88 b9       	out	0x08, r24	; 8
@@ -467,7 +464,7 @@ uint8_t getkey()
  29c:	10 e0       	ldi	r17, 0x00	; 0
 	for(col=0;col<3;col++)
 	{
-		DDRC|=(0x10<<col);
+		DDRC|=(0x10<<col); //setting 1 column at a time to pull current
  29e:	68 94       	set
  2a0:	cc 24       	eor	r12, r12
  2a2:	c4 f8       	bld	r12, 4
@@ -510,7 +507,7 @@ uint8_t getkey()
  2e6:	0f c0       	rjmp	.+30     	; 0x306 <getkey+0x88>
 	for(col=0;col<3;col++)
 	{
-		DDRC|=(0x10<<col);
+		DDRC|=(0x10<<col); //setting 1 column at a time to pull current
 		if(!GPIO_read(&PINC, 0))
 			return(-1);
 		for(row=0;row<4;row++)
@@ -519,7 +516,7 @@ uint8_t getkey()
  2ec:	79 f7       	brne	.-34     	; 0x2cc <getkey+0x4e>
 			if(!GPIO_read(&PINC, row))
 				return(row*3+col+1);
-		DDRC&=~(0x10<<col);
+		DDRC&=~(0x10<<col); //turning column off
  2ee:	87 b1       	in	r24, 0x07	; 7
  2f0:	e0 94       	com	r14
  2f2:	e8 22       	and	r14, r24
@@ -529,8 +526,8 @@ uint8_t getkey()
 uint8_t getkey()
 {
 	uint8_t row, col;
-	DDRC&=~(0x7F);
-	PORTC|=0x0F;
+	DDRC&=~(0x7F); //setting all pins as input
+	PORTC|=0x0F; //setting all pins for when externally pulled, will source current
 	for(col=0;col<3;col++)
  2fa:	03 30       	cpi	r16, 0x03	; 3
  2fc:	11 05       	cpc	r17, r1
@@ -538,21 +535,21 @@ uint8_t getkey()
 		for(row=0;row<4;row++)
 			if(!GPIO_read(&PINC, row))
 				return(row*3+col+1);
-		DDRC&=~(0x10<<col);
+		DDRC&=~(0x10<<col); //turning column off
 	}
 	return 0;//Indicate No key pressed
  300:	80 e0       	ldi	r24, 0x00	; 0
  302:	01 c0       	rjmp	.+2      	; 0x306 <getkey+0x88>
-	PORTC|=0x0F;
+	PORTC|=0x0F; //setting all pins for when externally pulled, will source current
 	for(col=0;col<3;col++)
 	{
-		DDRC|=(0x10<<col);
+		DDRC|=(0x10<<col); //setting 1 column at a time to pull current
 		if(!GPIO_read(&PINC, 0))
 			return(-1);
  304:	8f ef       	ldi	r24, 0xFF	; 255
 			if(!GPIO_read(&PINC, row))
 				return(row*3+col+1);
-		DDRC&=~(0x10<<col);
+		DDRC&=~(0x10<<col); //turning column off
 	}
 	return 0;//Indicate No key pressed
 }
@@ -567,10 +564,10 @@ uint8_t getkey()
  316:	08 95       	ret
 
 00000318 <get_code>:
-* @return None
-* @par Constantly runs the getkey() function, checking for input from the keypad. If there is any, operates with it - puts numbers in the code, if it is not full,
- deletes, if the '*'(backspace) character is used and sends the code to be checked if the '#'(enter) is used. Also limits the time to put in the code to 20s.
-*/
+ * @return None
+ * @par Constantly runs the getkey() function, checking for input from the keypad. If there is any, operates with it - puts numbers in the code, if it is not full,
+ *deletes, if the '*'(backspace) character is used and sends the code to be checked if the '#'(enter) is used. Also limits the time to put in the code to 20s.
+ */
 void get_code(uint8_t* code)
 {
  318:	0f 93       	push	r16
@@ -617,7 +614,7 @@ void get_code(uint8_t* code)
  358:	61 f0       	breq	.+24     	; 0x372 <get_code+0x5a>
  35a:	06 c0       	rjmp	.+12     	; 0x368 <get_code+0x50>
 				TIM2_overflow_interrupt_disable();
-				current_state = CHECK_CODE; //ma se provest kontrola hesla a pripadne dalsi zmeny
+				current_state = CHECK_CODE;
 				break;
 			case 10:
 				for(uint8_t i=3;i>=0;i--)
@@ -629,7 +626,7 @@ void get_code(uint8_t* code)
  364:	83 e0       	ldi	r24, 0x03	; 3
  366:	1c c0       	rjmp	.+56     	; 0x3a0 <get_code+0x88>
 					}
-				_delay_ms(250);
+				_delay_ms(250); //to prevent repeated keystroke
 					break;
 			default:
 				for(uint8_t j=0;j<4;j++)
@@ -650,7 +647,7 @@ void get_code(uint8_t* code)
  376:	80 81       	ld	r24, Z
  378:	8e 7f       	andi	r24, 0xFE	; 254
  37a:	80 83       	st	Z, r24
-				current_state = CHECK_CODE; //ma se provest kontrola hesla a pripadne dalsi zmeny
+				current_state = CHECK_CODE;
  37c:	82 e0       	ldi	r24, 0x02	; 2
  37e:	80 93 bb 01 	sts	0x01BB, r24	; 0x8001bb <current_state>
 				break;
@@ -682,7 +679,7 @@ void get_code(uint8_t* code)
  39e:	24 c0       	rjmp	.+72     	; 0x3e8 <get_code+0xd0>
 			case 12:
 				TIM2_overflow_interrupt_disable();
-				current_state = CHECK_CODE; //ma se provest kontrola hesla a pripadne dalsi zmeny
+				current_state = CHECK_CODE;
 				break;
 			case 10:
 				for(uint8_t i=3;i>=0;i--)
@@ -702,7 +699,7 @@ void get_code(uint8_t* code)
  3b8:	4c 5f       	subi	r20, 0xFC	; 252
  3ba:	5f 4f       	sbci	r21, 0xFF	; 255
 					}
-				_delay_ms(250);
+				_delay_ms(250); //to prevent repeated keystroke
 					break;
 			default:
 				for(uint8_t j=0;j<4;j++)
@@ -722,7 +719,7 @@ void get_code(uint8_t* code)
  3ce:	03 c0       	rjmp	.+6      	; 0x3d6 <get_code+0xbe>
 						break;
 					}
-				_delay_ms(250);
+				_delay_ms(250); //to prevent repeated keystroke
 					break;
 			default:
 				for(uint8_t j=0;j<4;j++)
@@ -738,8 +735,8 @@ void get_code(uint8_t* code)
  3e2:	e1 f7       	brne	.-8      	; 0x3dc <get_code+0xc4>
  3e4:	00 c0       	rjmp	.+0      	; 0x3e6 <get_code+0xce>
  3e6:	00 00       	nop
-				_delay_ms(250);
-		} //pokud nedochazi ke kontrole hesla, je treba vlozit malou pauzu (cca 0,5s), aby nedochazelo k duplikaci stisknuteho tlacitka
+				_delay_ms(250); //to prevent repeated keystroke
+		}
 	}
 	
 	
@@ -866,90 +863,81 @@ bool check_code(uint8_t* code)
  4a4:	7f 4f       	sbci	r23, 0xFF	; 255
 	for(uint8_t i = 0;i < 3; i++)
  4a6:	10 e0       	ldi	r17, 0x00	; 0
-* @return true(1) or false (0)
-*/
-bool check_code(uint8_t* code)
-{
-	char welcome[] = "Welcome UserX";
-	uint8_t correct_counter = 0;
- 4a8:	30 e0       	ldi	r19, 0x00	; 0
- 4aa:	a7 01       	movw	r20, r14
- 4ac:	4c 5f       	subi	r20, 0xFC	; 252
- 4ae:	5f 4f       	sbci	r21, 0xFF	; 255
- 4b0:	23 c0       	rjmp	.+70     	; 0x4f8 <check_code+0x98>
-	//codes are 4242, 0123, 9876
-	uint8_t correct_password[3][4] = {{4,2,4,2},{11,1,2,3},{9,8,7,6}};
-	for(uint8_t i = 0;i < 3; i++)
+ 4a8:	a7 01       	movw	r20, r14
+ 4aa:	4c 5f       	subi	r20, 0xFC	; 252
+ 4ac:	5f 4f       	sbci	r21, 0xFF	; 255
+ 4ae:	23 c0       	rjmp	.+70     	; 0x4f6 <check_code+0x96>
 	{
 		for(uint8_t j = 0; j < 4; j++)
 			if(correct_password[i][j] == code[j])
- 4b2:	2d 91       	ld	r18, X+
- 4b4:	91 91       	ld	r25, Z+
- 4b6:	29 13       	cpse	r18, r25
- 4b8:	01 c0       	rjmp	.+2      	; 0x4bc <check_code+0x5c>
+ 4b0:	2d 91       	ld	r18, X+
+ 4b2:	91 91       	ld	r25, Z+
+ 4b4:	29 13       	cpse	r18, r25
+ 4b6:	01 c0       	rjmp	.+2      	; 0x4ba <check_code+0x5a>
 				correct_counter++;
- 4ba:	3f 5f       	subi	r19, 0xFF	; 255
+ 4b8:	3f 5f       	subi	r19, 0xFF	; 255
 	uint8_t correct_counter = 0;
 	//codes are 4242, 0123, 9876
 	uint8_t correct_password[3][4] = {{4,2,4,2},{11,1,2,3},{9,8,7,6}};
 	for(uint8_t i = 0;i < 3; i++)
 	{
 		for(uint8_t j = 0; j < 4; j++)
- 4bc:	e4 17       	cp	r30, r20
- 4be:	f5 07       	cpc	r31, r21
- 4c0:	c1 f7       	brne	.-16     	; 0x4b2 <check_code+0x52>
+ 4ba:	e4 17       	cp	r30, r20
+ 4bc:	f5 07       	cpc	r31, r21
+ 4be:	c1 f7       	brne	.-16     	; 0x4b0 <check_code+0x50>
 			if(correct_password[i][j] == code[j])
 				correct_counter++;
 		if(correct_counter == 4)
- 4c2:	34 30       	cpi	r19, 0x04	; 4
- 4c4:	a1 f4       	brne	.+40     	; 0x4ee <check_code+0x8e>
+ 4c0:	34 30       	cpi	r19, 0x04	; 4
+ 4c2:	a1 f4       	brne	.+40     	; 0x4ec <check_code+0x8c>
 		{
 			lcd_gotoxy(1, 0);
- 4c6:	60 e0       	ldi	r22, 0x00	; 0
- 4c8:	81 e0       	ldi	r24, 0x01	; 1
- 4ca:	0e 94 a0 00 	call	0x140	; 0x140 <lcd_gotoxy>
+ 4c4:	60 e0       	ldi	r22, 0x00	; 0
+ 4c6:	81 e0       	ldi	r24, 0x01	; 1
+ 4c8:	0e 94 a0 00 	call	0x140	; 0x140 <lcd_gotoxy>
 			lcd_puts("ACCESS GRANTED");
- 4ce:	83 e3       	ldi	r24, 0x33	; 51
- 4d0:	91 e0       	ldi	r25, 0x01	; 1
- 4d2:	0e 94 b2 00 	call	0x164	; 0x164 <lcd_puts>
+ 4cc:	83 e3       	ldi	r24, 0x33	; 51
+ 4ce:	91 e0       	ldi	r25, 0x01	; 1
+ 4d0:	0e 94 b2 00 	call	0x164	; 0x164 <lcd_puts>
 			lcd_gotoxy(1, 1);
- 4d6:	61 e0       	ldi	r22, 0x01	; 1
- 4d8:	81 e0       	ldi	r24, 0x01	; 1
- 4da:	0e 94 a0 00 	call	0x140	; 0x140 <lcd_gotoxy>
+ 4d4:	61 e0       	ldi	r22, 0x01	; 1
+ 4d6:	81 e0       	ldi	r24, 0x01	; 1
+ 4d8:	0e 94 a0 00 	call	0x140	; 0x140 <lcd_gotoxy>
 			welcome[12] = (char) i + '0';
- 4de:	10 5d       	subi	r17, 0xD0	; 208
- 4e0:	1d 87       	std	Y+13, r17	; 0x0d
+ 4dc:	10 5d       	subi	r17, 0xD0	; 208
+ 4de:	1d 87       	std	Y+13, r17	; 0x0d
 			lcd_puts(welcome);
- 4e2:	ce 01       	movw	r24, r28
- 4e4:	01 96       	adiw	r24, 0x01	; 1
- 4e6:	0e 94 b2 00 	call	0x164	; 0x164 <lcd_puts>
+ 4e0:	ce 01       	movw	r24, r28
+ 4e2:	01 96       	adiw	r24, 0x01	; 1
+ 4e4:	0e 94 b2 00 	call	0x164	; 0x164 <lcd_puts>
 			return 1;
- 4ea:	81 e0       	ldi	r24, 0x01	; 1
- 4ec:	09 c0       	rjmp	.+18     	; 0x500 <check_code+0xa0>
+ 4e8:	81 e0       	ldi	r24, 0x01	; 1
+ 4ea:	0a c0       	rjmp	.+20     	; 0x500 <check_code+0xa0>
 {
 	char welcome[] = "Welcome UserX";
 	uint8_t correct_counter = 0;
 	//codes are 4242, 0123, 9876
 	uint8_t correct_password[3][4] = {{4,2,4,2},{11,1,2,3},{9,8,7,6}};
 	for(uint8_t i = 0;i < 3; i++)
- 4ee:	1f 5f       	subi	r17, 0xFF	; 255
- 4f0:	6c 5f       	subi	r22, 0xFC	; 252
- 4f2:	7f 4f       	sbci	r23, 0xFF	; 255
- 4f4:	13 30       	cpi	r17, 0x03	; 3
- 4f6:	19 f0       	breq	.+6      	; 0x4fe <check_code+0x9e>
- 4f8:	f7 01       	movw	r30, r14
+ 4ec:	1f 5f       	subi	r17, 0xFF	; 255
+ 4ee:	6c 5f       	subi	r22, 0xFC	; 252
+ 4f0:	7f 4f       	sbci	r23, 0xFF	; 255
+ 4f2:	13 30       	cpi	r17, 0x03	; 3
+ 4f4:	21 f0       	breq	.+8      	; 0x4fe <check_code+0x9e>
+ 4f6:	f7 01       	movw	r30, r14
 /**
 * @brief Checks, if the correct code has been entered
 * @return true(1) or false (0)
 */
 bool check_code(uint8_t* code)
 {
- 4fa:	db 01       	movw	r26, r22
- 4fc:	da cf       	rjmp	.-76     	; 0x4b2 <check_code+0x52>
-			welcome[12] = (char) i + '0';
+ 4f8:	db 01       	movw	r26, r22
+ 4fa:	30 e0       	ldi	r19, 0x00	; 0
+ 4fc:	d9 cf       	rjmp	.-78     	; 0x4b0 <check_code+0x50>
 			lcd_puts(welcome);
 			return 1;
 		}
+		correct_counter=0;
 	}
 	return 0;
  4fe:	80 e0       	ldi	r24, 0x00	; 0
@@ -1298,9 +1286,9 @@ ISR(TIMER1_OVF_vect)
 
 00000722 <__vector_9>:
 /**
-* @brief Timer used for resetting after certain time
-* @par Has 2 functions - when the code is being put in, limits the time for that to 20s, when the code is entered, waits for 5s before resetting the machine.
-*/
+ * @brief Timer used for resetting after certain time
+ * @par Has 2 functions - when the code is being put in, limits the time for that to 20s, when the code is entered, waits for 5s before resetting the machine.
+ */
 ISR(TIMER2_OVF_vect)
 {
  722:	1f 92       	push	r1
@@ -1336,7 +1324,7 @@ ISR(TIMER2_OVF_vect)
  75a:	80 91 bb 01 	lds	r24, 0x01BB	; 0x8001bb <current_state>
  75e:	83 30       	cpi	r24, 0x03	; 3
  760:	09 f4       	brne	.+2      	; 0x764 <__vector_9+0x42>
-		PORTB|=(0x08);
+		PORTB|=(0x08); //open door with relay
  762:	2b 9a       	sbi	0x05, 3	; 5
 	if(current_state == WRONG_CODE && counter2 == 250)
  764:	80 91 bb 01 	lds	r24, 0x01BB	; 0x8001bb <current_state>
@@ -1412,7 +1400,7 @@ ISR(TIMER2_OVF_vect)
  7fa:	a1 05       	cpc	r26, r1
  7fc:	b1 05       	cpc	r27, r1
  7fe:	08 f0       	brcs	.+2      	; 0x802 <__vector_9+0xe0>
-			PORTB|=(0x04);
+			PORTB|=(0x04); //start alarm
  800:	2a 9a       	sbi	0x05, 2	; 5
 	}
 	
@@ -1428,16 +1416,16 @@ ISR(TIMER2_OVF_vect)
  81c:	90 93 b8 01 	sts	0x01B8, r25	; 0x8001b8 <counter2+0x1>
  820:	a0 93 b9 01 	sts	0x01B9, r26	; 0x8001b9 <counter2+0x2>
  824:	b0 93 ba 01 	sts	0x01BA, r27	; 0x8001ba <counter2+0x3>
-	if(counter2 == 1250)//timer set 4ms or 16 ms, 1250*4ms = 5s, 1250*16ms = 20s
+	if(counter2 == 1250)//timer set on 4ms or 16 ms, 1250*4ms = 5s, 1250*16ms = 20s
  828:	82 3e       	cpi	r24, 0xE2	; 226
  82a:	94 40       	sbci	r25, 0x04	; 4
  82c:	a1 05       	cpc	r26, r1
  82e:	b1 05       	cpc	r27, r1
  830:	89 f4       	brne	.+34     	; 0x854 <__vector_9+0x132>
 	{
-		PORTB&=~(0x08);
+		PORTB&=~(0x08); // close door with relay
  832:	2b 98       	cbi	0x05, 3	; 5
-		PORTB&=~(0x04);
+		PORTB&=~(0x04); // stop alarm
  834:	2a 98       	cbi	0x05, 2	; 5
 		counter2 = 0;
  836:	10 92 b7 01 	sts	0x01B7, r1	; 0x8001b7 <counter2>
@@ -1453,6 +1441,7 @@ ISR(TIMER2_OVF_vect)
  850:	8e 7f       	andi	r24, 0xFE	; 254
  852:	80 83       	st	Z, r24
 	}
+}
  854:	0f 90       	pop	r0
  856:	0f 90       	pop	r0
  858:	0f 90       	pop	r0
